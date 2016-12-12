@@ -18,6 +18,7 @@ package com.gitblit.auth;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.gitblit.utils.WindowsLogonInfo;
 import waffle.windows.auth.IWindowsAccount;
 import waffle.windows.auth.IWindowsAuthProvider;
 import waffle.windows.auth.IWindowsComputer;
@@ -31,7 +32,6 @@ import com.gitblit.Keys;
 import com.gitblit.auth.AuthenticationProvider.UsernamePasswordAuthenticationProvider;
 import com.gitblit.models.TeamModel;
 import com.gitblit.models.UserModel;
-import com.gitblit.utils.StringUtils;
 import com.sun.jna.platform.win32.Win32Exception;
 
 /**
@@ -60,16 +60,19 @@ public class WindowsAuthProvider extends UsernamePasswordAuthenticationProvider 
     }
 
     protected String describeJoinStatus(String value) {
-    	if ("NetSetupUnknownStatus".equals(value)) {
-    		return "unknown";
-    	} else if ("NetSetupUnjoined".equals(value)) {
-    		return "not joined";
-    	} else if ("NetSetupWorkgroupName".equals(value)) {
-    		return "joined to a workgroup";
-    	} else if ("NetSetupDomainName".equals(value)) {
-    		return "joined to a domain";
-    	}
-    	return value;
+        if ("NetSetupUnknownStatus".equals(value)) {
+            return "unknown";
+        }
+        else if ("NetSetupUnjoined".equals(value)) {
+            return "not joined";
+        }
+        else if ("NetSetupWorkgroupName".equals(value)) {
+            return "joined to a workgroup";
+        }
+        else if ("NetSetupDomainName".equals(value)) {
+            return "joined to a domain";
+        }
+        return value;
     }
 
     @Override
@@ -97,94 +100,90 @@ public class WindowsAuthProvider extends UsernamePasswordAuthenticationProvider 
         return true;
     }
 
-	@Override
-	public boolean supportsRoleChanges(TeamModel team, Role role) {
-		return true;
-	}
-
-	 @Override
-	public AccountType getAccountType() {
-		return AccountType.WINDOWS;
-	}
+    @Override
+    public boolean supportsRoleChanges(TeamModel team, Role role) {
+        return true;
+    }
 
     @Override
-    public UserModel authenticate(String username, char[] password) {
-		String defaultDomain = settings.getString(Keys.realm.windows.defaultDomain, null);
-		if (StringUtils.isEmpty(defaultDomain)) {
-			// ensure that default domain is null
-			defaultDomain = null;
-		}
+    public AccountType getAccountType() {
+        return AccountType.WINDOWS;
+    }
 
-		if (defaultDomain != null) {
-			// sanitize username
-			if (username.startsWith(defaultDomain + "\\")) {
-				// strip default domain from domain\ username
-				username = username.substring(defaultDomain.length() + 1);
-			} else if (username.endsWith("@" + defaultDomain)) {
-				// strip default domain from username@domain
-				username = username.substring(0, username.lastIndexOf('@'));
-			}
-		}
+    @Override
+    public UserModel authenticate(String rawLogin, char[] password) {
+        String defaultDomain = settings.getString(Keys.realm.windows.defaultDomain, null);
+        boolean isMultiDomainAllowed = settings.getBoolean(Keys.realm.windows.allowMultipleDomainAuthentication, false);
 
-		IWindowsIdentity identity = null;
-		try {
-			if (username.indexOf('@') > -1 || username.indexOf('\\') > -1) {
-				// manually specified domain
-				identity = waffle.logonUser(username, new String(password));
-			} else {
-				// no domain specified, use default domain
-				identity = waffle.logonDomainUser(username, defaultDomain, new String(password));
-			}
-		} catch (Win32Exception e) {
-			logger.error(e.getMessage());
-			return null;
-		}
-
-		if (identity.isGuest() && !settings.getBoolean(Keys.realm.windows.allowGuests, false)) {
-			logger.warn("Guest account access is disabled");
-			identity.dispose();
-			return null;
-		}
-
-        UserModel user = userManager.getUserModel(username);
-        if (user == null) {
-        	// create user object for new authenticated user
-        	user = new UserModel(username.toLowerCase());
+        WindowsLogonInfo loginInfo = WindowsLogonInfo.Parse(rawLogin, defaultDomain);
+        if (!loginInfo.isValid()) {
+            logger.warn("Failed to parse provided Windows logon info.");
+            return null;
+        }
+        if (!isMultiDomainAllowed && !loginInfo.getNetBIOSDomain().equalsIgnoreCase(WindowsLogonInfo.trimDNSsuffixFromDomainName(defaultDomain))){
+            logger.warn("Login with a domain different than the default is not permitted.");
+            return null;
         }
 
-        // create a user cookie
-        setCookie(user, password);
+        IWindowsIdentity identity = null;
+        try {
+            try {
+                identity = waffle.logonDomainUser(loginInfo.getUser(), loginInfo.getNetBIOSDomain(), new String(password));
+            } catch (Win32Exception e) {
+                logger.error(e.getMessage());
+                return null;
+            }
 
-        // update user attributes from Windows identity
-        user.accountType = getAccountType();
-        String fqn = identity.getFqn();
-        if (fqn.indexOf('\\') > -1) {
-        	user.displayName = fqn.substring(fqn.lastIndexOf('\\') + 1);
-        } else {
-        	user.displayName = fqn;
+            if (identity.isGuest() && !settings.getBoolean(Keys.realm.windows.allowGuests, false)) {
+                logger.warn("Guest account access is disabled");
+                return null;
+            }
+            // If authentication from multiple domains is permitted, then use DOMAIN_user as the key for user in user.conf,
+            // to avoid ambiguity.
+            // If not, it is safe to use the user name only, which makes for nicer looking download urls and private repo folders.
+            String gitblitUser = isMultiDomainAllowed ? loginInfo.getNetBIOSDomain() + "_" + loginInfo.getUser() : loginInfo.getUser();
+            UserModel user = userManager.getUserModel(gitblitUser);
+            if (user == null) {
+                // create user object for new authenticated user
+                user = new UserModel(gitblitUser);
+            }
+
+            // create a user cookie
+            setCookie(user, password);
+
+            // update user attributes from Windows identity
+            user.accountType = getAccountType();
+            String fqn = identity.getFqn();
+            if (fqn.indexOf('\\') > -1) {
+                user.displayName = fqn.substring(fqn.lastIndexOf('\\') + 1);
+            }
+            else {
+                user.displayName = fqn;
+            }
+            user.password = Constants.EXTERNAL_ACCOUNT;
+
+            Set<String> groupNames = new TreeSet<String>();
+            for (IWindowsAccount group : identity.getGroups()) {
+                groupNames.add(group.getFqn());
+            }
+
+            if (settings.getBoolean(Keys.realm.windows.permitBuiltInAdministrators, true)) {
+                if (groupNames.contains("BUILTIN\\Administrators")) {
+                    // local administrator
+                    user.canAdmin = true;
+                }
+            }
+
+            // TODO consider mapping Windows groups to teams
+
+            // push the changes to the backing user service
+            updateUser(user);
+            return user;
+        } finally {
+            if (identity != null) {
+                // cleanup resources
+                identity.dispose();
+            }
         }
-        user.password = Constants.EXTERNAL_ACCOUNT;
-
-        Set<String> groupNames = new TreeSet<String>();
-       	for (IWindowsAccount group : identity.getGroups()) {
-       		groupNames.add(group.getFqn());
-        }
-
-       	if (settings.getBoolean(Keys.realm.windows.permitBuiltInAdministrators, true)) {
-       		if (groupNames.contains("BUILTIN\\Administrators")) {
-       			// local administrator
-       			user.canAdmin = true;
-       		}
-        }
-
-        // TODO consider mapping Windows groups to teams
-
-        // push the changes to the backing user service
-        updateUser(user);
-
-        // cleanup resources
-        identity.dispose();
-
-        return user;
     }
 }

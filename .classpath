@@ -48,7 +48,7 @@
 	<classpathentry kind="lib" path="ext/httpcore-4.3.3.jar" sourcepath="ext/src/httpcore-4.3.3.jar" />
 	<classpathentry kind="lib" path="ext/commons-logging-1.1.3.jar" sourcepath="ext/src/commons-logging-1.1.3.jar" />
 	<classpathentry kind="lib" path="ext/commons-codec-1.7.jar" sourcepath="ext/src/commons-codec-1.7.jar" />
-	<classpathentry kind="lib" path="ext/org.eclipse.jdt.annotation-1.1.0.jar" />
+	<classpathentry kind="lib" path="ext/org.eclipse.jdt.annotation-1.1.0.jar" sourcepath="ext/src/org.eclipse.jdt.annotation-1.1.0.jar" />
 	<classpathentry kind="lib" path="ext/org.eclipse.jgit.http.server-4.1.1.201511131810-r.jar" sourcepath="ext/src/org.eclipse.jgit.http.server-4.1.1.201511131810-r.jar" />
 	<classpathentry kind="lib" path="ext/bcprov-jdk15on-1.52.jar" sourcepath="ext/src/bcprov-jdk15on-1.52.jar" />
 	<classpathentry kind="lib" path="ext/bcmail-jdk15on-1.52.jar" sourcepath="ext/src/bcmail-jdk15on-1.52.jar" />
@@ -93,10 +93,5 @@
 	<classpathentry kind="lib" path="ext/mockito-core-1.10.19.jar" sourcepath="ext/src/mockito-core-1.10.19.jar" />
 	<classpathentry kind="lib" path="ext/objenesis-2.1.jar" sourcepath="ext/src/objenesis-2.1.jar" />
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" />
-	<classpathentry kind="src" path="src/main/dagger">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="output" path="bin/classes" />
 </classpath>

@@ -490,7 +490,9 @@
           <root url="jar://$MODULE_DIR$/ext/org.eclipse.jdt.annotation-1.1.0.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/ext/src/org.eclipse.jdt.annotation-1.1.0.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
