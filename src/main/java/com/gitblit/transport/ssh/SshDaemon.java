@@ -29,9 +29,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.sshd.common.io.IoServiceFactoryFactory;
 import org.apache.sshd.common.io.mina.MinaServiceFactoryFactory;
 import org.apache.sshd.common.io.nio2.Nio2ServiceFactoryFactory;
-import org.apache.sshd.common.util.SecurityUtils;
+import org.apache.sshd.common.util.security.SecurityUtils;
+import org.apache.sshd.common.util.security.bouncycastle.BouncyCastleSecurityProviderRegistrar;
+import org.apache.sshd.common.util.security.eddsa.EdDSASecurityProviderRegistrar;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.CachingPublicKeyAuthenticator;
+import org.apache.sshd.server.auth.pubkey.CachingPublicKeyAuthenticator;
 import org.bouncycastle.openssl.PEMWriter;
 import org.eclipse.jgit.internal.JGitText;
 import org.slf4j.Logger;
@@ -92,9 +94,11 @@ public class SshDaemon {
 		IStoredSettings settings = gitblit.getSettings();
 
 		// Ensure that Bouncy Castle is our JCE provider
-		SecurityUtils.setRegisterBouncyCastle(true);
+		SecurityUtils.registerSecurityProvider(new BouncyCastleSecurityProviderRegistrar());
+		// Add support for ED25519_SHA512
+		SecurityUtils.registerSecurityProvider(new EdDSASecurityProviderRegistrar());
 		if (SecurityUtils.isBouncyCastleRegistered()) {
-			log.debug("BouncyCastle is registered as a JCE provider");
+			log.info("BouncyCastle is registered as a JCE provider");
 		}
 
 		// Generate host RSA and DSA keypairs and create the host keypair provider
@@ -158,7 +162,7 @@ public class SshDaemon {
 			log.info("SSH: adding GSSAPI authentication method.");
 		}
 
-		sshd.setSessionFactory(new SshServerSessionFactory());
+		sshd.setSessionFactory(new SshServerSessionFactory(sshd));
 		sshd.setFileSystemFactory(new DisabledFilesystemFactory());
 		sshd.setTcpipForwardingFilter(new NonForwardingFilter());
 		sshd.setCommandFactory(new SshCommandFactory(gitblit, workQueue));

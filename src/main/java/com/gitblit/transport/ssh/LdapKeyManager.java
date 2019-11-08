@@ -26,9 +26,9 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.sshd.common.config.keys.AuthorizedKeyEntry;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.util.GenericUtils;
-import org.apache.sshd.server.config.keys.AuthorizedKeyEntry;
 
 import com.gitblit.IStoredSettings;
 import com.gitblit.Keys;
@@ -212,7 +212,7 @@ public class LdapKeyManager extends IPublicKeyManager {
 					List<SshKey> keyList = new ArrayList<>(authorizedKeys.size());
 					for (GbAuthorizedKeyEntry keyEntry : authorizedKeys) {
 						try {
-							SshKey key = new SshKey(keyEntry.resolvePublicKey());
+							SshKey key = new SshKey(keyEntry.resolvePublicKey(null));
 							key.setComment(keyEntry.getComment());
 							setKeyPermissions(key, keyEntry);
 							keyList.add(key);

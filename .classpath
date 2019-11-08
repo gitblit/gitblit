@@ -42,7 +42,7 @@
 	<classpathentry kind="lib" path="ext/tracwiki-core-1.4.jar" sourcepath="ext/src/tracwiki-core-1.4.jar" />
 	<classpathentry kind="lib" path="ext/mediawiki-core-1.4.jar" sourcepath="ext/src/mediawiki-core-1.4.jar" />
 	<classpathentry kind="lib" path="ext/confluence-core-1.4.jar" sourcepath="ext/src/confluence-core-1.4.jar" />
-	<classpathentry kind="lib" path="ext/org.eclipse.jgit-4.1.1.201511131810-r.jar" sourcepath="ext/src/org.eclipse.jgit-4.1.1.201511131810-r.jar" />
+	<classpathentry kind="lib" path="ext/org.eclipse.jgit-4.1.2.201602141800-r.jar" sourcepath="ext/src/org.eclipse.jgit-4.1.2.201602141800-r.jar" />
 	<classpathentry kind="lib" path="ext/jsch-0.1.53.jar" sourcepath="ext/src/jsch-0.1.53.jar" />
 	<classpathentry kind="lib" path="ext/JavaEWAH-0.7.9.jar" sourcepath="ext/src/JavaEWAH-0.7.9.jar" />
 	<classpathentry kind="lib" path="ext/httpclient-4.3.6.jar" sourcepath="ext/src/httpclient-4.3.6.jar" />
@@ -50,12 +50,13 @@
 	<classpathentry kind="lib" path="ext/commons-logging-1.1.3.jar" sourcepath="ext/src/commons-logging-1.1.3.jar" />
 	<classpathentry kind="lib" path="ext/commons-codec-1.7.jar" sourcepath="ext/src/commons-codec-1.7.jar" />
 	<classpathentry kind="lib" path="ext/org.eclipse.jdt.annotation-1.1.0.jar" sourcepath="ext/src/org.eclipse.jdt.annotation-1.1.0.jar" />
-	<classpathentry kind="lib" path="ext/org.eclipse.jgit.http.server-4.1.1.201511131810-r.jar" sourcepath="ext/src/org.eclipse.jgit.http.server-4.1.1.201511131810-r.jar" />
+	<classpathentry kind="lib" path="ext/org.eclipse.jgit.http.server-4.1.2.201602141800-r.jar" sourcepath="ext/src/org.eclipse.jgit.http.server-4.1.2.201602141800-r.jar" />
 	<classpathentry kind="lib" path="ext/bcprov-jdk15on-1.52.jar" sourcepath="ext/src/bcprov-jdk15on-1.52.jar" />
 	<classpathentry kind="lib" path="ext/bcmail-jdk15on-1.52.jar" sourcepath="ext/src/bcmail-jdk15on-1.52.jar" />
 	<classpathentry kind="lib" path="ext/bcpkix-jdk15on-1.52.jar" sourcepath="ext/src/bcpkix-jdk15on-1.52.jar" />
-	<classpathentry kind="lib" path="ext/sshd-core-1.0.0.jar" sourcepath="ext/src/sshd-core-1.0.0.jar" />
-	<classpathentry kind="lib" path="ext/mina-core-2.0.9.jar" sourcepath="ext/src/mina-core-2.0.9.jar" />
+	<classpathentry kind="lib" path="ext/eddsa-0.2.0.jar" sourcepath="ext/src/eddsa-0.2.0.jar" />
+	<classpathentry kind="lib" path="ext/sshd-core-1.6.0.jar" sourcepath="ext/src/sshd-core-1.6.0.jar" />
+	<classpathentry kind="lib" path="ext/mina-core-2.0.16.jar" sourcepath="ext/src/mina-core-2.0.16.jar" />
 	<classpathentry kind="lib" path="ext/rome-0.9.jar" sourcepath="ext/src/rome-0.9.jar" />
 	<classpathentry kind="lib" path="ext/jdom-1.0.jar" sourcepath="ext/src/jdom-1.0.jar" />
 	<classpathentry kind="lib" path="ext/gson-2.3.1.jar" sourcepath="ext/src/gson-2.3.1.jar" />

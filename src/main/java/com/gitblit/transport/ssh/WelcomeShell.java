@@ -57,6 +57,11 @@ public class WelcomeShell implements Factory<Command> {
 		return new SendMessage(gitblit);
 	}
 
+	@Override
+	public Command get() {
+		return create();
+	}
+
 	private static class SendMessage implements Command, SessionAware {
 
 		private final IPublicKeyManager km;

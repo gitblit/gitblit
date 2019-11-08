@@ -22,7 +22,9 @@ import org.apache.sshd.common.future.CloseFuture;
 import org.apache.sshd.common.future.SshFutureListener;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.io.mina.MinaSession;
-import org.apache.sshd.common.session.AbstractSession;
+import org.apache.sshd.common.session.helpers.AbstractSession;
+import org.apache.sshd.server.ServerFactoryManager;
+import org.apache.sshd.server.session.ServerSessionImpl;
 import org.apache.sshd.server.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +38,12 @@ public class SshServerSessionFactory extends SessionFactory {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	public SshServerSessionFactory() {
+	public SshServerSessionFactory(ServerFactoryManager server) {
+		super(server);
 	}
 
 	@Override
-	protected AbstractSession createSession(final IoSession io) throws Exception {
+	protected ServerSessionImpl createSession(final IoSession io) throws Exception {
 		log.info("creating ssh session from {}", io.getRemoteAddress());
 
 		if (io instanceof MinaSession) {
@@ -66,7 +69,7 @@ public class SshServerSessionFactory extends SessionFactory {
 	}
 
 	@Override
-	protected AbstractSession doCreateSession(IoSession ioSession) throws Exception {
+	protected ServerSessionImpl doCreateSession(IoSession ioSession) throws Exception {
 		return new SshServerSession(getServer(), ioSession);
 	}
 }

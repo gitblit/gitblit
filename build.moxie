@@ -107,13 +107,13 @@ properties: {
   slf4j.version  : 1.7.12
   wicket.version : 1.4.22
   lucene.version : 5.5.2
-  jgit.version   : 4.1.1.201511131810-r
+  jgit.version   : 4.1.2.201602141800-r
   groovy.version : 2.4.4
   bouncycastle.version : 1.52
   selenium.version : 2.28.0
   wikitext.version : 1.4
-  sshd.version: 1.0.0
-  mina.version: 2.0.9
+  sshd.version: 1.6.0
+  mina.version: 2.0.16
   guice.version : 4.0
   # Gitblit maintains a fork of guice-servlet
   guice-servlet.version : 4.0-gb2
@@ -161,6 +161,7 @@ dependencies:
 - compile 'org.bouncycastle:bcprov-jdk15on:${bouncycastle.version}' :war
 - compile 'org.bouncycastle:bcmail-jdk15on:${bouncycastle.version}' :war
 - compile 'org.bouncycastle:bcpkix-jdk15on:${bouncycastle.version}' :war
+- compile 'net.i2p.crypto:eddsa:0.2.0' :war !org.easymock
 - compile 'org.apache.sshd:sshd-core:${sshd.version}' :war !org.easymock
 - compile 'org.apache.mina:mina-core:${mina.version}' :war !org.easymock
 - compile 'rome:rome:0.9' :war :manager :api

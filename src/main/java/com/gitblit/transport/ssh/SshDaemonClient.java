@@ -17,9 +17,9 @@ package com.gitblit.transport.ssh;
 
 import java.net.SocketAddress;
 
-import org.apache.sshd.common.session.Session.AttributeKey;
 
 import com.gitblit.models.UserModel;
+import org.apache.sshd.common.AttributeStore;
 
 /**
  *
@@ -27,7 +27,7 @@ import com.gitblit.models.UserModel;
  *
  */
 public class SshDaemonClient {
-	public static final AttributeKey<SshDaemonClient> KEY = new AttributeKey<SshDaemonClient>();
+	public static final AttributeStore.AttributeKey<SshDaemonClient> KEY = new AttributeStore.AttributeKey<SshDaemonClient>();
 
 	private final SocketAddress remoteAddress;
 
