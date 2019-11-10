@@ -103,7 +103,7 @@ repositories: central, eclipse-snapshots, eclipse, gitblit
 
 # Convenience properties for dependencies
 properties: {
-  jetty.version  : 9.2.13.v20150730
+  jetty.version  : 9.3.16.v20170120
   slf4j.version  : 1.7.12
   wicket.version : 1.4.22
   lucene.version : 5.5.2
@@ -140,7 +140,14 @@ dependencies:
 - compile 'org.slf4j:slf4j-log4j12:${slf4j.version}' :war :fedclient :manager
 - compile 'com.sun.mail:javax.mail:1.5.1' :war
 - compile 'javax.servlet:javax.servlet-api:3.1.0' :fedclient
-- compile 'org.eclipse.jetty.aggregate:jetty-all:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-servlet:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-security:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-server:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-continuation:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-http:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-io:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-util:${jetty.version}' @jar
+- compile 'org.eclipse.jetty:jetty-webapp:${jetty.version}' @jar
 - compile 'org.apache.wicket:wicket:${wicket.version}' :war !org.mockito
 - compile 'org.apache.wicket:wicket-auth-roles:${wicket.version}' :war !org.mockito
 - compile 'org.apache.wicket:wicket-extensions:${wicket.version}' :war !org.mockito
