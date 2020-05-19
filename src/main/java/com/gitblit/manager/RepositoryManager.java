@@ -19,9 +19,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,6 +89,7 @@ import com.gitblit.utils.CommitCache;
 import com.gitblit.utils.DeepCopier;
 import com.gitblit.utils.JGitUtils;
 import com.gitblit.utils.JGitUtils.LastChange;
+import com.gitblit.utils.MapUtils;
 import com.gitblit.utils.MetricUtils;
 import com.gitblit.utils.ModelUtils;
 import com.gitblit.utils.ObjectCache;
@@ -1924,6 +1927,7 @@ public class RepositoryManager implements IRepositoryManager {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void configureJGit() {
 		// Configure JGit
 		WindowCacheConfig cfg = new WindowCacheConfig();
@@ -1944,16 +1948,39 @@ public class RepositoryManager implements IRepositoryManager {
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to configure JGit parameters!", e);
 		}
-
+		
 		try {
 			// issue-486/ticket-151: UTF-9 & UTF-18
 			// issue-560/ticket-237: 'UTF8'
 			Field field = RawParseUtils.class.getDeclaredField("encodingAliases");
 			field.setAccessible(true);
-			Map<String, Charset> encodingAliases = (Map<String, Charset>) field.get(null);
+
+			Map<String, Charset> encodingAliases;
+			
+			try {
+				Field modifiersField = Field.class.getDeclaredField("modifiers");
+				modifiersField.setAccessible(true);
+				modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+			      
+				// Since unknown encodingAliases cause GitBlit to crash we replace the 
+				// map by a wrapper class that always returns a value. ISO-8859-1 seems
+				// appropriate since it is a fixed 8-bit encoding.
+				encodingAliases = (Map<String, Charset>) field.get(null);
+				encodingAliases = MapUtils.defaultMap(encodingAliases, StandardCharsets.ISO_8859_1);
+				field.set(null, encodingAliases);
+				
+				modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
+				modifiersField.setAccessible(false);
+			} catch(Throwable t) {
+				logger.error("Failed to inject wrapper class for encoding Aliases", t);
+				encodingAliases = (Map<String, Charset>) field.get(null);
+			}
+			
+			// Provided sensible default mappings
 			encodingAliases.put("'utf8'", RawParseUtils.UTF8_CHARSET);
 			encodingAliases.put("utf-9", RawParseUtils.UTF8_CHARSET);
 			encodingAliases.put("utf-18", RawParseUtils.UTF8_CHARSET);
+			
 			logger.info("Alias 'UTF8', UTF-9 & UTF-18 encodings as UTF-8 in JGit");
 		} catch (Throwable t) {
 			logger.error("Failed to inject UTF-9 & UTF-18 encoding aliases into JGit", t);
