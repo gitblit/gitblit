@@ -57,6 +57,12 @@ public class BlobPage extends RepositoryPage {
 			throw new RedirectException(TreePage.class, WicketUtils.newRepositoryParameter(repositoryName));
 		}
 
+		//add blob edit link
+		BookmarkablePageLink<EditFilePage> editDocLink = new BookmarkablePageLink<>("editDocLink", EditFilePage.class, 
+				WicketUtils.newPathParameter(repositoryName, objectId, blobPath));
+		editDocLink.setEnabled(false);
+		add(editDocLink);
+		
 		if (StringUtils.isEmpty(blobPath)) {
 			// blob by objectid
 
@@ -142,6 +148,8 @@ public class BlobPage extends RepositoryPage {
 					add(new Label("blobText", table).setEscapeModelStrings(false));
 					add(new Image("blobImage").setVisible(false));
 					fileExtension = extension;
+					//set blob edit link enable
+					editDocLink.setEnabled(true);
 				}
 			} else {
 				// plain text
@@ -155,6 +163,8 @@ public class BlobPage extends RepositoryPage {
 				}
 				add(new Label("blobText", table).setEscapeModelStrings(false));
 				add(new Image("blobImage").setVisible(false));
+				//set blob edit link enable
+				editDocLink.setEnabled(true);
 			}
 		}
 	}

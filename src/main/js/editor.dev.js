@@ -6,6 +6,11 @@ attachDocumentEditor = function (editorElement, commitDialogElement)
 	require("./prosemirror/dist/markdown")
 	var _menu = require("./prosemirror/dist/menu/menu")
 	
+	var link = window.location.href;
+	var extIdx = link.lastIndexOf('.');
+	var ext = extIdx > 0 && (extIdx > link.length - 8) ? link.substring(extIdx+1) : "";
+	//FIXME It work, but is not a good idea.
+	var isMd=(ext=='md'||ext=='mkd'||ext=='markdown'||ext=='MD'||ext=='MKD');
 	
 	var content = document.querySelector('#editor');
 	content.style.display = "none";
@@ -15,7 +20,9 @@ attachDocumentEditor = function (editorElement, commitDialogElement)
 	var textCommands = new _menu.MenuCommandGroup("textCommands");
 	var insertCommands = new _menu.MenuCommandGroup("insertCommands");
 	
-	var menuItems = [gitblitCommands, viewCommands, textCommands, _menu.inlineGroup, _menu.blockGroup, _menu.historyGroup, insertCommands];
+	var menuItems = isMd ? 
+	    [gitblitCommands, viewCommands, textCommands, _menu.inlineGroup, _menu.blockGroup, _menu.historyGroup, insertCommands]
+	    : [gitblitCommands, viewCommands, _menu.historyGroup];
 	
 	const updateCmd = Object.create(null);
 	
@@ -23,7 +30,7 @@ attachDocumentEditor = function (editorElement, commitDialogElement)
 		label: "GitblitCommit",
 		run: function() {
 			commitDialogElement.modal({show:true});
-			editorElement.value = pm.getContent('markdown');
+			editorElement.value = isMd ? pm.getContent('markdown') : pm.getContent('text');
 		},
 		menu: {
 			group: "gitblitCommands", rank: 10,
@@ -214,7 +221,7 @@ attachDocumentEditor = function (editorElement, commitDialogElement)
 	  doc: content.value,
 	  menuBar: { float:true, content: menuItems},
 	  commands: edit.CommandSet.default.update(updateCmd),
-	  docFormat: "markdown"
+	  docFormat: isMd ? "markdown" : "text"
 	});
 	
 
