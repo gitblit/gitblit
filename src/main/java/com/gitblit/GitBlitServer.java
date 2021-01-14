@@ -292,7 +292,7 @@ public class GitBlitServer {
 				if (params.requireClientCertificates) {
 					factory.setNeedClientAuth(true);
 				} else {
-					factory.setWantClientAuth(true);
+					factory.setWantClientAuth((params.wantClientCertificates));
 				}
 
 				ServerConnector connector = new ServerConnector(server, factory);
@@ -601,6 +601,9 @@ public class GitBlitServer {
 
 		@Option(name = "--requireClientCertificates", usage = "Require client X509 certificates for https connections.")
 		public Boolean requireClientCertificates = FILESETTINGS.getBoolean(Keys.server.requireClientCertificates, false);
+
+		@Option(name = "--wantClientCertificates", usage = "Ask for optional client X509 certificate for https connections. Ignored if client certificates are required.")
+		public Boolean wantClientCertificates = FILESETTINGS.getBoolean(Keys.server.wantClientCertificates, false);
 
 		/*
 		 * Setting overrides
