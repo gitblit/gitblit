@@ -39,6 +39,8 @@ public class MarkdownUtilsTest extends GitblitUnitTest {
 				MarkdownUtils.transformMarkdown("**THIS ** is a test"));
 		assertEquals("<p>** THIS** is a test</p>",
 				MarkdownUtils.transformMarkdown("** THIS** is a test"));
+		assertEquals("<p>This is also a test</p>",
+				MarkdownUtils.transformMarkdown("This is also\na test"));
 
 		assertEquals("<table><tr><td>test</td></tr></table>",
 				MarkdownUtils.transformMarkdown("<table><tr><td>test</td></tr></table>"));

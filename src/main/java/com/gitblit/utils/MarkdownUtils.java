@@ -17,6 +17,7 @@ package com.gitblit.utils;
 
 import static org.pegdown.Extensions.ALL;
 import static org.pegdown.Extensions.ANCHORLINKS;
+import static org.pegdown.Extensions.HARDWRAPS;
 import static org.pegdown.Extensions.SMARTYPANTS;
 
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class MarkdownUtils {
 	 */
 	public static String transformMarkdown(String markdown, LinkRenderer linkRenderer) {
 		try {
-			PegDownProcessor pd = new PegDownProcessor(ALL & ~SMARTYPANTS & ~ANCHORLINKS);
+			PegDownProcessor pd = new PegDownProcessor(ALL & ~SMARTYPANTS & ~ANCHORLINKS & ~HARDWRAPS);
 			RootNode astRoot = pd.parseMarkdown(markdown.toCharArray());
 			return new WorkaroundHtmlSerializer(linkRenderer == null ? new LinkRenderer() : linkRenderer).toHtml(astRoot);
 		} catch (ParsingTimeoutException e) {
