@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.RequestCycle;
@@ -56,6 +58,8 @@ import org.slf4j.LoggerFactory;
 
 import com.gitblit.IStoredSettings;
 import com.gitblit.Keys;
+import com.gitblit.markdown.TableOfContentsGenerator;
+import com.gitblit.markdown.Utils;
 import com.gitblit.models.PathModel;
 import com.gitblit.servlet.RawServlet;
 import com.gitblit.utils.JGitUtils;
@@ -366,10 +370,33 @@ public class MarkupProcessor {
 			}
 		};
 
-		final String content = MarkdownUtils.transformMarkdown(doc.markup, renderer);
+		String markdown = new TableOfContentsGenerator(doc.markup).start();
+		String content = MarkdownUtils.transformMarkdown(markdown, renderer);
+
+		content = generateHeaderIds(content);
+		
 		final String safeContent = xssFilter.relaxed(content);
 
 		doc.html = safeContent;
+	}
+	
+	private String generateHeaderIds(String content) {
+		Pattern insideHeader = Pattern.compile("<h\\d>(.*?)<\\/h\\d>");
+		Matcher m = insideHeader.matcher(content);
+
+		while (m.find()) {
+			String id = Utils.normalize(m.group().replaceAll("<h\\d>", "").replaceAll("<\\/h\\d>", "")); 
+			Pattern iniTag = Pattern.compile("<h\\d");
+			Matcher lookTag = iniTag.matcher(m.group());
+			String tag = "";
+			if (lookTag.find()) {
+				tag = lookTag.group();
+			}
+			String finalTag = m.group().replace(tag, tag + " id=\"" + id + "\"");
+
+			content = content.replace(m.group(), finalTag);
+		}
+		return content;
 	}
 
 	private String getWicketUrl(Class<? extends Page> pageClass, final String repositoryName, final String commitId, final String document) {

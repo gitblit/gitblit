@@ -69,7 +69,7 @@ public class DocsPage extends RepositoryPage {
 		final String commitId = getBestCommitId(head);
 
 		List<String> extensions = processor.getAllExtensions();
-		List<PathModel> paths = JGitUtils.getDocuments(r, extensions);
+		List<PathModel> paths = JGitUtils.getDocuments(r, extensions, objectId);
 
 		List<MarkupDocument> roots = processor.getRootDocs(r, repositoryName, commitId);
 		Fragment fragment = null;
