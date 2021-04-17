@@ -148,7 +148,7 @@ dependencies:
 - compile 'org.apache.wicket:wicket-extensions:${wicket.version}' :war !org.mockito
 - compile 'org.apache.lucene:lucene-core:${lucene.version}' :war :fedclient
 - compile 'org.apache.lucene:lucene-analyzers-common:${lucene.version}' :war :fedclient
-- compile 'org.apache.lucene:lucene-highlighter:${lucene.version}' :war :fedclient !org.apache.lucene:lucene-join
+- compile 'org.apache.lucene:lucene-highlighter:${lucene.version}' :war :fedclient 
 - compile 'org.apache.lucene:lucene-memory:${lucene.version}' :war :fedclient
 - compile 'org.apache.lucene:lucene-queryparser:${lucene.version}' :war :fedclient !org.apache.lucene:lucene-spatial
 - compile 'org.pegdown:pegdown:1.5.0' :war
@@ -171,17 +171,18 @@ dependencies:
 - compile 'com.unboundid:unboundid-ldapsdk:2.3.8' :war
 - compile 'org.apache.ivy:ivy:2.2.0' :war
 - compile 'com.toedter:jcalendar:1.3.2' :authority
-- compile 'org.apache.commons:commons-compress:1.4.1' :war
-- compile 'commons-io:commons-io:2.2' :war
+- compile 'org.apache.commons:commons-compress:1.16' :war
+- compile 'commons-io:commons-io:2.6' :war
 - compile 'com.force.api:force-partner-api:24.0.0' :war
 - compile 'org.freemarker:freemarker:2.3.22' :war
 - compile 'com.github.dblock.waffle:waffle-jna:1.7.3' :war
 - compile 'org.kohsuke:libpam4j:1.8' :war
 - compile 'args4j:args4j:2.0.29' :war :fedclient
-- compile 'commons-codec:commons-codec:1.7' :war
+- compile 'commons-codec:commons-codec:1.11' :war
 - compile 'redis.clients:jedis:2.6.2' :war
 - compile 'ro.fortsoft.pf4j:pf4j:0.9.0' :war
-- compile 'org.apache.tika:tika-core:1.5' :war
+- compile 'org.apache.tika:tika-core:1.17' :war
+- compile 'org.apache.tika:tika-parsers:1.17' :war
 - compile 'org.jsoup:jsoup:1.7.3' :war
 - compile 'com.sun.activation:javax.activation:1.2.0' :war :manager :fedclient
 - test 'junit:junit:4.12'
