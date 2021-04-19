@@ -140,7 +140,7 @@ dependencies:
 - compile 'log4j:log4j:1.2.17' :war :fedclient :manager
 - compile 'org.slf4j:slf4j-api:${slf4j.version}' :war :fedclient :manager
 - compile 'org.slf4j:slf4j-log4j12:${slf4j.version}' :war :fedclient :manager
-- compile 'com.sun.mail:javax.mail:1.5.1' :war
+- compile 'com.sun.mail:javax.mail:1.5.6' :war
 - compile 'javax.servlet:javax.servlet-api:3.1.0' :fedclient
 - compile 'org.eclipse.jetty.aggregate:jetty-all:${jetty.version}' @jar
 - compile 'org.apache.wicket:wicket:${wicket.version}' :war !org.mockito
