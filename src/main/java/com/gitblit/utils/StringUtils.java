@@ -105,6 +105,8 @@ public class StringUtils {
 	public static String escapeForHtml(String inStr, boolean changeSpace, int tabLength) {
 		StringBuilder retStr = new StringBuilder();
 		int i = 0;
+		int l = 0;
+		
 		while (i < inStr.length()) {
 			if (inStr.charAt(i) == '&') {
 				retStr.append("&amp;");
@@ -117,11 +119,17 @@ public class StringUtils {
 			} else if (changeSpace && inStr.charAt(i) == ' ') {
 				retStr.append("&nbsp;");
 			} else if (changeSpace && inStr.charAt(i) == '\t') {
-				for (int j = 0; j < tabLength; j++) {
+				for (int j = 0; j < tabLength - l; j++) {
 					retStr.append("&nbsp;");
 				}
+				l = -1;
 			} else {
 				retStr.append(inStr.charAt(i));
+			}
+			
+			l = (l + 1) % tabLength;
+			if (inStr.charAt(i) == '\n') {
+				l = 0;
 			}
 			i++;
 		}

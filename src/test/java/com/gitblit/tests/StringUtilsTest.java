@@ -61,11 +61,21 @@ public class StringUtilsTest extends GitblitUnitTest {
 
 	@Test
 	public void testEscapeForHtml() throws Exception {
-		String input = "& < > \" \t";
-		String outputNoChange = "&amp; &lt; &gt; &quot; \t";
-		String outputChange = "&amp;&nbsp;&lt;&nbsp;&gt;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+		String input = "& < > \"";
+		String outputNoChange = "&amp; &lt; &gt; &quot;";
+		String outputChange = "&amp;&nbsp;&lt;&nbsp;&gt;&nbsp;&quot;";
 		assertEquals(outputNoChange, StringUtils.escapeForHtml(input, false));
 		assertEquals(outputChange, StringUtils.escapeForHtml(input, true));
+
+		String tabs = "\t";
+		int tabSpaces;
+		int expectedLength;
+		for (int i = 0; i < 50; i++) {
+			tabSpaces = 4 - i % 4;
+			expectedLength = (i + tabSpaces) * 6; // &nbsp; = 6 chars
+			assertEquals(expectedLength, StringUtils.escapeForHtml(tabs, true).length());
+			tabs = " " + tabs;
+		}
 	}
 
 	@Test
