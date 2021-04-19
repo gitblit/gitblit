@@ -58,7 +58,7 @@ public class SessionlessForm<T> extends StatelessForm<T> {
 
 	protected final PageParameters pageParameters;
 
-	private final Logger log = LoggerFactory.getLogger(SessionlessForm.class);
+	private transient Logger logger;
 
 	/**
 	 * Sessionless forms must have a bookmarkable page class.  A bookmarkable
@@ -118,7 +118,10 @@ public class SessionlessForm<T> extends StatelessForm<T> {
 				if (c != null) {
 					// this form has a field id which matches the
 					// parameter name, skip embedding a hidden value
-					log.warn(MessageFormat.format("Skipping page parameter \"{0}\" from sessionless form hidden fields because it collides with a form child wicket:id", key));
+					logger().warn(
+							MessageFormat
+									.format("Skipping page parameter \"{0}\" from sessionless form hidden fields because it collides with a form child wicket:id",
+											key));
 					continue;
 				}
 				String value = pageParameters.getString(key);
@@ -155,5 +158,12 @@ public class SessionlessForm<T> extends StatelessForm<T> {
 		String relativeUrl = urlFor(pageClass, pageParameters).toString();
 		String absoluteUrl = RequestUtils.toAbsolutePath(relativeUrl);
 		return absoluteUrl;
+	}
+
+	private Logger logger() {
+		if (logger == null) {
+			logger = LoggerFactory.getLogger(SessionlessForm.class);
+		}
+		return logger;
 	}
 }

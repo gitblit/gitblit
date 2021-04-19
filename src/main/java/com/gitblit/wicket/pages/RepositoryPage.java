@@ -42,8 +42,6 @@ import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gitblit.Constants;
 import com.gitblit.GitBlitException;
@@ -78,8 +76,6 @@ import com.google.common.base.Optional;
 
 public abstract class RepositoryPage extends RootPage {
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
-
 	private final String PARAM_STAR = "star";
 
 	protected final String projectName;
@@ -93,7 +89,7 @@ public abstract class RepositoryPage extends RootPage {
 	private Map<String, SubmoduleModel> submodules;
 
 	private boolean showAdmin;
-	private boolean isOwner;
+	private final boolean isOwner;
 
 	public RepositoryPage(PageParameters params) {
 		super(params);
@@ -144,7 +140,7 @@ public abstract class RepositoryPage extends RootPage {
 				try {
 					app().gitblit().reviseUser(user.username, user);
 				} catch (GitBlitException e) {
-					logger.error("Failed to update user " + user.username, e);
+					logger().error("Failed to update user " + user.username, e);
 					error(getString("gb.failedToUpdateUser"), false);
 				}
 			}
@@ -579,7 +575,7 @@ public abstract class RepositoryPage extends RootPage {
 	}
 
 	protected void addRefs(Repository r, RevCommit c) {
-		add(new RefsPanel("refsPanel", repositoryName, c, JGitUtils.getAllRefs(r, getRepositoryModel().showRemoteBranches)));
+		add(new RefsPanel("refsPanel", repositoryName, JGitUtils.getAllRefs(r, getRepositoryModel().showRemoteBranches).get(c.getId())));
 	}
 
 	protected void addFullText(String wicketId, String text) {

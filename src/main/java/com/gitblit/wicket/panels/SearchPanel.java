@@ -15,6 +15,7 @@
  */
 package com.gitblit.wicket.panels;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import com.gitblit.Constants;
 import com.gitblit.Keys;
 import com.gitblit.models.RefModel;
+import com.gitblit.models.RepositoryCommit;
+import com.gitblit.utils.ArrayUtils;
 import com.gitblit.utils.JGitUtils;
 import com.gitblit.utils.StringUtils;
 import com.gitblit.wicket.WicketUtils;
@@ -43,7 +46,7 @@ public class SearchPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private boolean hasMore;
+	private final boolean hasMore;
 
 	public SearchPanel(String wicketId, final String repositoryName, final String objectId,
 			final String value, Constants.SearchType searchType, Repository r, int limit, int pageOffset,
@@ -57,7 +60,7 @@ public class SearchPanel extends BasePanel {
 
 		RevCommit commit = JGitUtils.getCommit(r, objectId);
 
-		final Map<ObjectId, List<RefModel>> allRefs = JGitUtils.getAllRefs(r, showRemoteRefs);
+		Map<ObjectId, List<RefModel>> allRefs = JGitUtils.getAllRefs(r, showRemoteRefs);
 		List<RevCommit> commits;
 		if (pageResults) {
 			// Paging result set
@@ -78,15 +81,23 @@ public class SearchPanel extends BasePanel {
 		add(new Label("searchString", value));
 		add(new Label("searchType", searchType.toString()));
 
-		ListDataProvider<RevCommit> dp = new ListDataProvider<RevCommit>(commits);
-		DataView<RevCommit> searchView = new DataView<RevCommit>("commit", dp) {
+		List<RepositoryCommit> repoCommits = new ArrayList<>(commits.size());
+		for (RevCommit c : commits) {
+			RepositoryCommit repoCommit = new RepositoryCommit(repositoryName, "", c);
+			if (allRefs.containsKey(c)) {
+				repoCommit.setRefs(allRefs.get(c));
+			}
+			repoCommits.add(repoCommit);
+		}
+		ListDataProvider<RepositoryCommit> dp = new ListDataProvider<RepositoryCommit>(repoCommits);
+		DataView<RepositoryCommit> searchView = new DataView<RepositoryCommit>("commit", dp) {
 			private static final long serialVersionUID = 1L;
 			int counter;
 
 			@Override
-			public void populateItem(final Item<RevCommit> item) {
-				final RevCommit entry = item.getModelObject();
-				final Date date = JGitUtils.getAuthorDate(entry);
+			public void populateItem(final Item<RepositoryCommit> item) {
+				final RepositoryCommit entry = item.getModelObject();
+				final Date date = entry.getAuthorIdent().getWhen();
 
 				item.add(WicketUtils.createDateLabel("commitDate", date, getTimeZone(), getTimeUtils()));
 
@@ -107,7 +118,7 @@ public class SearchPanel extends BasePanel {
 
 				String shortMessage = entry.getShortMessage();
 				String trimmedMessage = shortMessage;
-				if (allRefs.containsKey(entry.getId())) {
+				if (!ArrayUtils.isEmpty(entry.getRefs())) {
 					trimmedMessage = StringUtils.trimString(shortMessage, Constants.LEN_SHORTLOG_REFS);
 				} else {
 					trimmedMessage = StringUtils.trimString(shortMessage, Constants.LEN_SHORTLOG);
@@ -120,7 +131,7 @@ public class SearchPanel extends BasePanel {
 				}
 				item.add(shortlog);
 
-				item.add(new RefsPanel("commitRefs", repositoryName, entry, allRefs));
+				item.add(new RefsPanel("commitRefs", repositoryName, entry.getRefs()));
 
 				item.add(new BookmarkablePageLink<Void>("commit", CommitPage.class, WicketUtils
 						.newObjectParameter(repositoryName, entry.getName())));

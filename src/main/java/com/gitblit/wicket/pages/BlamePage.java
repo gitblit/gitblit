@@ -108,7 +108,7 @@ public class BlamePage extends RepositoryPage {
 		if (pathModel == null) {
 			final String notFound = MessageFormat.format("Blame page failed to find {0} in {1} @ {2}",
 					blobPath, repositoryName, objectId);
-			logger.error(notFound);
+			logger().error(notFound);
 			add(new Label("annotation").setVisible(false));
 			add(new Label("missingBlob", missingBlob(blobPath, commit)).setEscapeModelStrings(false));
 			return;

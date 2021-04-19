@@ -190,7 +190,7 @@ public class SummaryPage extends RepositoryPage {
 			try {
 				date = df.parse(metric.name);
 			} catch (ParseException e) {
-				logger.error("Unable to parse date: " + metric.name);
+				logger().error("Unable to parse date: " + metric.name);
 				return charts;
 			}
 			chart.addValue(date, (int)metric.count);

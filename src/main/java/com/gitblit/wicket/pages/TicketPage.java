@@ -66,6 +66,7 @@ import com.gitblit.git.PatchsetCommand;
 import com.gitblit.git.PatchsetReceivePack;
 import com.gitblit.models.PathModel.PathChangeModel;
 import com.gitblit.models.RegistrantAccessPermission;
+import com.gitblit.models.RepositoryCommit;
 import com.gitblit.models.RepositoryModel;
 import com.gitblit.models.RepositoryUrl;
 import com.gitblit.models.SubmoduleModel;
@@ -815,13 +816,17 @@ public class TicketPage extends RepositoryPage {
 
 			// commits
 			List<RevCommit> commits = JGitUtils.getRevLog(getRepository(), currentPatchset.base, currentPatchset.tip);
-			ListDataProvider<RevCommit> commitsDp = new ListDataProvider<RevCommit>(commits);
-			DataView<RevCommit> commitsView = new DataView<RevCommit>("commit", commitsDp) {
+			List<RepositoryCommit> repoCommits = new ArrayList<>(commits.size());
+			for (RevCommit c : commits) {
+				repoCommits.add(new RepositoryCommit(repositoryName, "", c));
+			}
+			ListDataProvider<RepositoryCommit> commitsDp = new ListDataProvider<RepositoryCommit>(repoCommits);
+			DataView<RepositoryCommit> commitsView = new DataView<RepositoryCommit>("commit", commitsDp) {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public void populateItem(final Item<RevCommit> item) {
-					RevCommit commit = item.getModelObject();
+				public void populateItem(final Item<RepositoryCommit> item) {
+					RepositoryCommit commit = item.getModelObject();
 					PersonIdent author = commit.getAuthorIdent();
 					item.add(new AvatarImage("authorAvatar", author.getName(), author.getEmailAddress(), null, 16, false));
 					item.add(new Label("author", commit.getAuthorIdent().getName()));
@@ -830,7 +835,7 @@ public class TicketPage extends RepositoryPage {
 					item.add(new LinkPanel("diff", "link", getString("gb.diff"), CommitDiffPage.class,
 							WicketUtils.newObjectParameter(repositoryName, commit.getName()), true));
 					item.add(new Label("title", StringUtils.trimString(commit.getShortMessage(), Constants.LEN_SHORTLOG_REFS)));
-					item.add(WicketUtils.createDateLabel("commitDate", JGitUtils.getAuthorDate(commit), GitBlitWebSession
+					item.add(WicketUtils.createDateLabel("commitDate", author.getWhen(), GitBlitWebSession
 							.get().getTimezone(), getTimeUtils(), false));
 					item.add(new DiffStatPanel("commitDiffStat", 0, 0, true));
 				}
@@ -1451,7 +1456,7 @@ public class TicketPage extends RepositoryPage {
 											} else {
 												// merge failure
 												String msg = MessageFormat.format("Failed to merge ticket {0,number,0}: {1}", ticket.number, result.name());
-												logger.error(msg);
+												logger().error(msg);
 												GitBlitWebSession.get().cacheErrorMessage(msg);
 											}
 										}
@@ -1461,13 +1466,13 @@ public class TicketPage extends RepositoryPage {
 									String msg = MessageFormat.format("Can not merge ticket {0,number,0}, patchset {1,number,0} has been vetoed!",
 											ticket.number, patchset.number);
 									GitBlitWebSession.get().cacheErrorMessage(msg);
-									logger.error(msg);
+									logger().error(msg);
 								}
 							} else {
 								// not current patchset
 								String msg = MessageFormat.format("Can not merge ticket {0,number,0}, the patchset has been updated!", ticket.number);
 								GitBlitWebSession.get().cacheErrorMessage(msg);
-								logger.error(msg);
+								logger().error(msg);
 							}
 							
 							redirectTo(TicketsPage.class, getPageParameters());

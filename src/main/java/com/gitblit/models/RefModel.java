@@ -36,18 +36,42 @@ import com.gitblit.utils.JGitUtils;
  */
 public class RefModel implements Serializable, Comparable<RefModel> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 876822269940583606L;
+
 	public final String displayName;
-	public final RevObject referencedObject;
-	public transient Ref reference;
+
+	private final Date date;
+	private final String name;
+	private final int type;
+	private final String id;
+	private final String referencedId;
+	private final boolean annotated;
+	private final PersonIdent person;
+	private final String shortMessage;
+	private final String fullMessage;
+
+	private transient ObjectId objectId;
+	private transient ObjectId referencedObjectId;
+
+	public transient Ref reference; // Used in too many places.
 
 	public RefModel(String displayName, Ref ref, RevObject refObject) {
-		this.displayName = displayName;
 		this.reference = ref;
-		this.referencedObject = refObject;
+		this.displayName = displayName;
+		this.date = internalGetDate(refObject);
+		this.name = ref != null ? ref.getName() : displayName;
+		this.type = internalGetReferencedObjectType(refObject);
+		this.objectId = ref != null ? ref.getObjectId() : ObjectId.zeroId();
+		this.id = this.objectId.getName();
+		this.referencedObjectId = internalGetReferencedObjectId(refObject);
+		this.referencedId = this.referencedObjectId.getName();
+		this.annotated = internalIsAnnotatedTag(ref, refObject);
+		this.person = internalGetAuthorIdent(refObject);
+		this.shortMessage = internalGetShortMessage(refObject);
+		this.fullMessage = internalGetFullMessage(refObject);
 	}
 
-	public Date getDate() {
+	private Date internalGetDate(RevObject referencedObject) {
 		Date date = new Date(0);
 		if (referencedObject != null) {
 			if (referencedObject instanceof RevTag) {
@@ -64,14 +88,15 @@ public class RefModel implements Serializable, Comparable<RefModel> {
 		return date;
 	}
 
-	public String getName() {
-		if (reference == null) {
-			return displayName;
-		}
-		return reference.getName();
+	public Date getDate() {
+		return date;
 	}
 
-	public int getReferencedObjectType() {
+	public String getName() {
+		return name;
+	}
+
+	private int internalGetReferencedObjectType(RevObject referencedObject) {
 		int type = referencedObject.getType();
 		if (referencedObject instanceof RevTag) {
 			type = ((RevTag) referencedObject).getObject().getType();
@@ -79,14 +104,25 @@ public class RefModel implements Serializable, Comparable<RefModel> {
 		return type;
 	}
 
-	public ObjectId getReferencedObjectId() {
+	public int getReferencedObjectType() {
+		return type;
+	}
+
+	private ObjectId internalGetReferencedObjectId(RevObject referencedObject) {
 		if (referencedObject instanceof RevTag) {
 			return ((RevTag) referencedObject).getObject().getId();
 		}
 		return referencedObject.getId();
 	}
 
-	public String getShortMessage() {
+	public ObjectId getReferencedObjectId() {
+		if (referencedObjectId == null) {
+			referencedObjectId = ObjectId.fromString(referencedId);
+		}
+		return referencedObjectId;
+	}
+
+	private String internalGetShortMessage(RevObject referencedObject) {
 		String message = "";
 		if (referencedObject instanceof RevTag) {
 			message = ((RevTag) referencedObject).getShortMessage();
@@ -96,7 +132,11 @@ public class RefModel implements Serializable, Comparable<RefModel> {
 		return message;
 	}
 
-	public String getFullMessage() {
+	public String getShortMessage() {
+		return shortMessage;
+	}
+
+	private String internalGetFullMessage(RevObject referencedObject) {
 		String message = "";
 		if (referencedObject instanceof RevTag) {
 			message = ((RevTag) referencedObject).getFullMessage();
@@ -106,7 +146,11 @@ public class RefModel implements Serializable, Comparable<RefModel> {
 		return message;
 	}
 
-	public PersonIdent getAuthorIdent() {
+	public String getFullMessage() {
+		return fullMessage;
+	}
+
+	private PersonIdent internalGetAuthorIdent(RevObject referencedObject) {
 		if (referencedObject instanceof RevTag) {
 			return ((RevTag) referencedObject).getTaggerIdent();
 		} else if (referencedObject instanceof RevCommit) {
@@ -115,15 +159,26 @@ public class RefModel implements Serializable, Comparable<RefModel> {
 		return null;
 	}
 
-	public ObjectId getObjectId() {
-		return reference.getObjectId();
+	public PersonIdent getAuthorIdent() {
+		return person;
 	}
 
-	public boolean isAnnotatedTag() {
+	public ObjectId getObjectId() {
+		if (objectId == null) {
+			objectId = ObjectId.fromString(id);
+		}
+		return objectId;
+	}
+
+	private boolean internalIsAnnotatedTag(Ref reference, RevObject referencedObject) {
 		if (referencedObject instanceof RevTag) {
 			return !getReferencedObjectId().equals(getObjectId());
 		}
-		return reference.getPeeledObjectId() != null;
+		return reference != null && reference.getPeeledObjectId() != null;
+	}
+
+	public boolean isAnnotatedTag() {
+		return annotated;
 	}
 
 	@Override

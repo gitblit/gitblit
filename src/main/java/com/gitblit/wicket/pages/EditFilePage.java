@@ -123,7 +123,7 @@ public class EditFilePage extends RepositoryPage {
 					try {			
 						ObjectId docAtLoad = getRepository().resolve(commitIdAtLoad.getObject());
 						
-						logger.trace("Commiting Edit File page: " + commitIdAtLoad.getObject());
+						logger().trace("Commiting Edit File page: " + commitIdAtLoad.getObject());
 						
 						DirCache index = DirCache.newInCore();
 						DirCacheBuilder builder = index.builder();

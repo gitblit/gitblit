@@ -45,7 +45,7 @@ import com.gitblit.wicket.WicketUtils;
 
 public class RawPage extends SessionPage {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass().getSimpleName());
+	private transient Logger logger;
 
 	String contentType;
 
@@ -95,7 +95,7 @@ public class RawPage extends SessionPage {
 					if (binary == null) {
 						final String objectNotFound = MessageFormat.format("Raw page failed to find object {0} in {1}",
 								objectId, repositoryName);
-						logger.error(objectNotFound);
+						logger().error(objectNotFound);
 						throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, objectNotFound);
 					}
 					contentType = "application/octet-stream";
@@ -104,7 +104,7 @@ public class RawPage extends SessionPage {
 					try {
 						response.getOutputStream().write(binary);
 					} catch (Exception e) {
-						logger.error("Failed to write binary response", e);
+						logger().error("Failed to write binary response", e);
 					}
 				} else {
 					// standard raw blob view
@@ -112,7 +112,7 @@ public class RawPage extends SessionPage {
 					if (commit == null) {
 						final String commitNotFound = MessageFormat.format("Raw page failed to find commit {0} in {1}",
 								objectId, repositoryName);
-						logger.error(commitNotFound);
+						logger().error(commitNotFound);
 						throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, commitNotFound);
 					}
 
@@ -148,7 +148,7 @@ public class RawPage extends SessionPage {
 							// image blobs
 							byte[] image = JGitUtils.getByteContent(r, commit.getTree(), blobPath, true);
 							if (image == null) {
-								logger.error(blobNotFound);
+								logger().error(blobNotFound);
 								throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, blobNotFound);
 							}
 							contentType = "image/" + extension.toLowerCase();
@@ -157,14 +157,14 @@ public class RawPage extends SessionPage {
 							try {
 								response.getOutputStream().write(image);
 							} catch (IOException e) {
-								logger.error("Failed to write image response", e);
+								logger().error("Failed to write image response", e);
 							}
 							break;
 						case 3:
 							// binary blobs (download)
 							byte[] binary = JGitUtils.getByteContent(r, commit.getTree(), blobPath, true);
 							if (binary == null) {
-								logger.error(blobNotFound);
+								logger().error(blobNotFound);
 								throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, blobNotFound);
 							}
 							contentType = "application/octet-stream";
@@ -193,7 +193,7 @@ public class RawPage extends SessionPage {
 							try {
 								response.getOutputStream().write(binary);
 							} catch (IOException e) {
-								logger.error("Failed to write binary response", e);
+								logger().error("Failed to write binary response", e);
 							}
 							break;
 						default:
@@ -201,7 +201,7 @@ public class RawPage extends SessionPage {
 							String content = JGitUtils.getStringContent(r, commit.getTree(),
 									blobPath, encodings);
 							if (content == null) {
-								logger.error(blobNotFound);
+								logger().error(blobNotFound);
 								throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, blobNotFound);
 							}
 							contentType = "text/plain; charset=UTF-8";
@@ -209,7 +209,7 @@ public class RawPage extends SessionPage {
 							try {
 								response.getOutputStream().write(content.getBytes("UTF-8"));
 							} catch (Exception e) {
-								logger.error("Failed to write text response", e);
+								logger().error("Failed to write text response", e);
 							}
 						}
 
@@ -218,7 +218,7 @@ public class RawPage extends SessionPage {
 						String content = JGitUtils.getStringContent(r, commit.getTree(), blobPath,
 								encodings);
 						if (content == null) {
-							logger.error(blobNotFound);
+							logger().error(blobNotFound);
 							throw new AbortWithWebErrorCodeException(HttpServletResponse.SC_NOT_FOUND, blobNotFound);
 						}
 						contentType = "text/plain; charset=UTF-8";
@@ -226,13 +226,20 @@ public class RawPage extends SessionPage {
 						try {
 							response.getOutputStream().write(content.getBytes("UTF-8"));
 						} catch (Exception e) {
-							logger.error("Failed to write text response", e);
+							logger().error("Failed to write text response", e);
 						}
 					}
 				}
 				r.close();
 			}
 		});
+	}
+
+	protected Logger logger() {
+		if (logger == null) {
+			logger = LoggerFactory.getLogger(getClass());
+		}
+		return logger;
 	}
 
 	@Override
