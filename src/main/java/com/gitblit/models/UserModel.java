@@ -136,6 +136,7 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 
 		// include immutable team permissions, being careful to preserve order
 		Set<RegistrantAccessPermission> set = new LinkedHashSet<RegistrantAccessPermission>(list);
+		ArrayList<RegistrantAccessPermission> arrayList = new ArrayList<RegistrantAccessPermission>(list);
 		for (TeamModel team : teams) {
 			for (RegistrantAccessPermission teamPermission : team.getRepositoryPermissions()) {
 				// we can not change an inherited team permission, though we can override
@@ -143,6 +144,18 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 				teamPermission.permissionType = PermissionType.TEAM;
 				teamPermission.source = team.name;
 				teamPermission.mutable = false;
+                if(arrayList.contains(teamPermission) && arrayList.get(arrayList.indexOf(teamPermission)).permissionType != PermissionType.REGEX){
+                    //checking either to replace permission in set or not
+                    if(teamPermission.permission.compareTo(arrayList.get(arrayList.indexOf(teamPermission)).permission) > 0 ){
+                        arrayList.remove(teamPermission);
+                        arrayList.add(teamPermission);
+                        set.remove(teamPermission);
+                        set.add(teamPermission);
+                    }
+                }
+                else{
+                    arrayList.add(teamPermission);
+                }
 				set.add(teamPermission);
 			}
 		}
