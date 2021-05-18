@@ -16,7 +16,7 @@ The text of the license is included in the file LICENSE in the root of the proje
 Java Runtime Requirement
 ------------------------------------
 
-Gitblit requires at Java 7 Runtime Environment (JRE) or a Java 7 Development Kit (JDK).
+Gitblit requires at Java 8 Runtime Environment (JRE) or a Java 8 Development Kit (JDK).
 
 Getting help
 ------------

@@ -69,12 +69,12 @@ resourceDirectories:
 - test 'src/test/resources'
 - site 'src/site/resources'
 
-# compile for Java 7 class format
+# compile for Java 8 class format
 tasks: {
 	'mx:javac' : {
-        source: 1.7
-        target: 1.7
-        compiler: javac1.7
+        source: 1.8
+        target: 1.8
+        compiler: javac1.8
         encoding: UTF-8
         # stop complaints about bootstrap classpath when compiling with Java 7
         compilerArgs: '-Xlint:-options'
