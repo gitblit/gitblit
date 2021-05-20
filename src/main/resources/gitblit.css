@@ -1767,7 +1767,8 @@ table.repositories td {
 
 table.repositories td.rightAlign {	
 	text-align: right;
-	border-right: 1px solid #ddd;	
+	border-right: 1px solid #ddd;
+	white-space: nowrap;
 }	
 
 table.repositories td.icon img {
@@ -1959,6 +1960,7 @@ td.size {
 
 td.rightAlign {
 	text-align: right;
+	white-space: nowrap;
 }
 
 td.treeLinks {

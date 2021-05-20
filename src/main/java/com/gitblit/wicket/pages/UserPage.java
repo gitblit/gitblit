@@ -168,6 +168,7 @@ public class UserPage extends RootPage {
 	
 	static List<Language> getLanguages(){
 		return  Arrays.asList(
+				new Language("Русский","ru"),
 				new Language("Česky","cs"),
 				new Language("Deutsch","de"),
 				new Language("English","en"),
