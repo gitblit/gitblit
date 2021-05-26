@@ -1,3 +1,5 @@
+@ECHO OFF
+
 @REM Install Gitblit as a Windows service.
 
 @REM gitblitw.exe (prunmgr.exe) is a GUI application for monitoring 
@@ -10,6 +12,8 @@
 
 @REM arch = x86, amd64, or ia32
 SET ARCH=amd64
+SET CD=%~dp0
+SET CD=%CD:~0,-1%
 
 @REM Be careful not to introduce trailing whitespace after the ^ characters.
 @REM Use ; or # to separate values in the --StartParams parameter.
