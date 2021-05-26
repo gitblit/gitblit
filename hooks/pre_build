@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "=> Building the binaries"
+
+docker run --privileged \
+  -v $(pwd):/src \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -e "ANT_OPTS=-Xmx256m" \
+  -e "ANT_ARGS=buildAll" \
+  brandonstevens/ant
