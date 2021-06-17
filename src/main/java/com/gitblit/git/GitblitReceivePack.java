@@ -16,13 +16,10 @@
 package com.gitblit.git;
 
 import static org.eclipse.jgit.transport.BasePackPushConnection.CAPABILITY_SIDE_BAND_64K;
-import groovy.lang.Binding;
-import groovy.util.GroovyScriptEngine;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -33,22 +30,24 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jgit.lib.AnyObjectId;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.eclipse.jgit.lib.BatchRefUpdate;
 import org.eclipse.jgit.lib.NullProgressMonitor;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PostReceiveHook;
 import org.eclipse.jgit.transport.PreReceiveHook;
 import org.eclipse.jgit.transport.ReceiveCommand;
 import org.eclipse.jgit.transport.ReceiveCommand.Result;
 import org.eclipse.jgit.transport.ReceivePack;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,13 +60,11 @@ import com.gitblit.extensions.ReceiveHook;
 import com.gitblit.manager.IGitblit;
 import com.gitblit.models.RepositoryModel;
 import com.gitblit.models.TicketModel;
-import com.gitblit.models.UserModel;
 import com.gitblit.models.TicketModel.Change;
 import com.gitblit.models.TicketModel.Field;
-import com.gitblit.models.TicketModel.Patchset;
 import com.gitblit.models.TicketModel.Status;
-import com.gitblit.models.TicketModel.TicketAction;
 import com.gitblit.models.TicketModel.TicketLink;
+import com.gitblit.models.UserModel;
 import com.gitblit.tickets.BranchTicketService;
 import com.gitblit.tickets.ITicketService;
 import com.gitblit.tickets.TicketNotifier;
@@ -77,7 +74,9 @@ import com.gitblit.utils.CommitCache;
 import com.gitblit.utils.JGitUtils;
 import com.gitblit.utils.RefLogUtils;
 import com.gitblit.utils.StringUtils;
-import com.google.common.collect.Lists;
+
+import groovy.lang.Binding;
+import groovy.util.GroovyScriptEngine;
 
 
 /**
@@ -98,7 +97,7 @@ import com.google.common.collect.Lists;
 public class GitblitReceivePack extends ReceivePack implements PreReceiveHook, PostReceiveHook {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitblitReceivePack.class);
-
+	
 	protected final RepositoryModel repository;
 
 	protected final UserModel user;
@@ -344,6 +343,7 @@ public class GitblitReceivePack extends ReceivePack implements PreReceiveHook, P
 			scripts.addAll(repository.preReceiveScripts);
 		}
 		runGroovy(commands, scripts);
+		runGitblitfile(commands, scripts, "PreReceive");
 		for (ReceiveCommand cmd : commands) {
 			if (!Result.NOT_ATTEMPTED.equals(cmd.getResult())) {
 				LOGGER.warn(MessageFormat.format("{0} {1} because \"{2}\"", cmd.getNewId()
@@ -393,6 +393,7 @@ public class GitblitReceivePack extends ReceivePack implements PreReceiveHook, P
 			scripts.addAll(repository.postReceiveScripts);
 		}
 		runGroovy(commands, scripts);
+		runGitblitfile(commands, scripts, "PostReceive");
 	}
 
 	/**
@@ -735,6 +736,71 @@ public class GitblitReceivePack extends ReceivePack implements PreReceiveHook, P
 			}
 		}
 	}
+	
+	/**
+     * Runs the specified Gitblitfile hook scripts.
+     *
+     * @param commands
+     * @param scripts
+     * @param event
+     */
+    private void runGitblitfile(Collection<ReceiveCommand> commands, Set<String> scripts, String event) {
+        LOGGER.info("Start executing the Gitblitfile script...");
+        @SuppressWarnings("rawtypes")
+        Class cls = loadGitblitfile();
+        if (null == cls) {
+            // no Gitblitfile scripts to execute
+            LOGGER.info("No found Gitblitfile script to execute.");
+            return;
+        }
+
+        Binding binding = new Binding();
+        binding.setVariable("gitblit", gitblit);
+        binding.setVariable("repository", repository);
+        binding.setVariable("receivePack", this);
+        binding.setVariable("user", user);
+        binding.setVariable("commands", commands);
+        binding.setVariable("url", gitblitUrl);
+        binding.setVariable("logger", LOGGER);
+        binding.setVariable("clientLogger", new ClientLogger(this));
+        binding.setVariable("event", event);
+        
+        try {
+            Object result = InvokerHelper.createScript(cls, binding).run();
+            if (result instanceof Boolean && !((Boolean) result)) {
+                LOGGER.error("Gitblitfile has failed! Script aborted.");
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to execute Gitblitfile", e);
+        }
+    }
+    
+    @SuppressWarnings({ "rawtypes" })
+    private Class loadGitblitfile() {
+        Repository db = getRepository();
+        try {
+            Ref ref = db.findRef(db.getBranch());
+            ObjectId objId = ref.getObjectId();
+            RevCommit revCommit = getRevWalk().parseCommit(objId);
+            RevTree revTree = revCommit.getTree();
+            TreeWalk treeWalk = TreeWalk.forPath(db, "Gitblitfile", revTree);
+            if (null == treeWalk) {
+                return null;
+            }
+
+            ObjectId blobId = treeWalk.getObjectId(0);
+            ObjectLoader loader = db.open(blobId);
+            byte[] bytes = loader.getBytes();
+            if (null == bytes || bytes.length == 0) {
+                return null;
+            }
+
+            return gse.getGroovyClassLoader().parseClass(new String(bytes));
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse Gitblitfile script", e);
+            return null;
+        }
+    }
 
 	public IGitblit getGitblit() {
 		return gitblit;
