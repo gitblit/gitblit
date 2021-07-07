@@ -287,8 +287,14 @@ public class GitBlitServer {
 				 * HTTPS
 				 */
 				logger.info("Setting up HTTPS transport on port " + params.securePort);
+                String sslExcludeProtocolsStr = settings.getString(Keys.server.sslExcludeProtocols, "SSLv3");
+                String[] sslExcludeProtocols = null;
+                if (sslExcludeProtocolsStr.length() > 0) {
+                    sslExcludeProtocols = sslExcludeProtocolsStr.split(",");
+                }
 				GitblitSslContextFactory factory = new GitblitSslContextFactory(params.alias,
-						serverKeyStore, serverTrustStore, params.storePassword, caRevocationList);
+						serverKeyStore, serverTrustStore, params.storePassword, caRevocationList,
+                        sslExcludeProtocols);
 				if (params.requireClientCertificates) {
 					factory.setNeedClientAuth(true);
 				} else {

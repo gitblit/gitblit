@@ -42,7 +42,7 @@ public class GitblitSslContextFactory extends SslContextFactory {
 	private final File caRevocationList;
 
 	public GitblitSslContextFactory(String certAlias, File keyStore, File clientTrustStore,
-			String storePassword, File caRevocationList) {
+			String storePassword, File caRevocationList, String[] excludeProtocols) {
 		super(keyStore.getAbsolutePath());
 
 		this.caRevocationList = caRevocationList;
@@ -54,7 +54,9 @@ public class GitblitSslContextFactory extends SslContextFactory {
 		setKeyStorePassword(storePassword);
 		setTrustStorePath(clientTrustStore.getAbsolutePath());
 		setTrustStorePassword(storePassword);
-		addExcludeProtocols("SSLv3");
+        if ((excludeProtocols != null) && (excludeProtocols.length > 0)) {
+            addExcludeProtocols(excludeProtocols);
+        }
 
 		logger.info("   keyStorePath   = " + keyStore.getAbsolutePath());
 		logger.info("   trustStorePath = " + clientTrustStore.getAbsolutePath());
