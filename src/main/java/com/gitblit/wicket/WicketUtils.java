@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.Request;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.behavior.SimpleAttributeModifier;
@@ -449,32 +450,43 @@ public class WicketUtils {
 	public static PageParameters newSearchParameter(String repositoryName,
 			String commitId, String search, Constants.SearchType type) {
 		Map<String, String> parameterMap = new HashMap<String, String>();
-		if (StringUtils.isEmpty(commitId)) {
-			parameterMap.put("r", repositoryName);
-			parameterMap.put("s", search);
-			parameterMap.put("st", type.name());
-			return new PageParameters(parameterMap);
-		}
+		setCommitIdIf(commitId, parameterMap);
 		parameterMap.put("r", repositoryName);
-		parameterMap.put("h", commitId);
 		parameterMap.put("s", search);
 		parameterMap.put("st", type.name());
 		return new PageParameters(parameterMap);
 	}
 
+	public static void setCommitIdIf(String commitId, Map<String, String> parameterMap) {
+		if (StringUtils.isEmpty(commitId)) {
+			final String branch = getRequestParameter("h");
+			if (!StringUtils.isEmpty(branch)) {
+				parameterMap.put("h", branch);
+			}
+		}else{
+			parameterMap.put("h", commitId);
+		}
+	}
+
+	protected static String getRequestParameter(final String key) {
+		final HttpServletRequest req = ((WebRequest)RequestCycle.get().getRequest()).getHttpServletRequest();
+		final String branch = req == null ? null : req.getParameter(key);
+		return branch;
+	}	
+	public static void setCommitIdIf(final PageParameters  params) {
+		if( params.get("h") == null ){
+			final String branch = getRequestParameter("h");
+			if (!StringUtils.isEmpty(branch)) {
+				params.put("h", branch);
+			}
+		}
+	}	
 	public static PageParameters newSearchParameter(String repositoryName,
 			String commitId, String search, Constants.SearchType type,
 			int pageNumber) {
 		Map<String, String> parameterMap = new HashMap<String, String>();
-		if (StringUtils.isEmpty(commitId)) {
-			parameterMap.put("r", repositoryName);
-			parameterMap.put("s", search);
-			parameterMap.put("st", type.name());
-			parameterMap.put("pg", String.valueOf(pageNumber));
-			return new PageParameters(parameterMap);
-		}
+		setCommitIdIf(commitId, parameterMap);
 		parameterMap.put("r", repositoryName);
-		parameterMap.put("h", commitId);
 		parameterMap.put("s", search);
 		parameterMap.put("st", type.name());
 		parameterMap.put("pg", String.valueOf(pageNumber));

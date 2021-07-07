@@ -229,10 +229,14 @@ public abstract class RepositoryPage extends RootPage {
 			return navLinks;
 		}
 
+		if( params != null ){
+			WicketUtils.setCommitIdIf(params);
+		}
 		navLinks.add(new PageNavLink("gb.commits", LogPage.class, objectParams));
 		navLinks.add(new PageNavLink("gb.tree", TreePage.class, objectParams));
 		if (app().tickets().isReady() && (app().tickets().isAcceptingNewTickets(model) || app().tickets().hasTickets(model))) {
 			PageParameters tParams = WicketUtils.newOpenTicketsParameter(getRepositoryName());
+			WicketUtils.setCommitIdIf(tParams);
 			navLinks.add(new PageNavLink("gb.tickets", TicketsPage.class, tParams));
 		}
 		navLinks.add(new PageNavLink("gb.docs", DocsPage.class, objectParams, true));

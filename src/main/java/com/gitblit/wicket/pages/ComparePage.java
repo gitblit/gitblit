@@ -78,7 +78,8 @@ public class ComparePage extends RepositoryPage {
 		Repository r = getRepository();
 		RepositoryModel repository = getRepositoryModel();
 
-		if (StringUtils.isEmpty(objectId)) {
+		String[] parts = StringUtils.isEmpty(objectId) ? null :  objectId.split("\\.\\.");
+		if ( parts == null || parts.length < 2) {
 			// seleciton form
 			add(new Label("comparison").setVisible(false));
 		} else {
@@ -89,7 +90,6 @@ public class ComparePage extends RepositoryPage {
 			RevCommit fromCommit;
 			RevCommit toCommit;
 
-			String[] parts = objectId.split("\\.\\.");
 			if (parts[0].startsWith("refs/") && parts[1].startsWith("refs/")) {
 				// set the ref models
 				fromRefId.setObject(parts[0]);
