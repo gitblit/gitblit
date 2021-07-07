@@ -27,6 +27,7 @@ import com.gitblit.Constants.AccountType;
 import com.gitblit.Constants.Role;
 import com.gitblit.Constants.AuthenticationType;
 import com.gitblit.IStoredSettings;
+import com.gitblit.Keys;
 import com.gitblit.manager.IRuntimeManager;
 import com.gitblit.manager.IUserManager;
 import com.gitblit.models.TeamModel;
@@ -88,17 +89,27 @@ public abstract class AuthenticationProvider {
 	protected void updateUser(UserModel userModel) {
 		final UserModel userLocalDB = userManager.getUserModel(userModel.getName());
 
+		String loginedUserDefaultTeam = settings.getString(Keys.realm.loginedUserDefaultTeam,null);
+		if(!StringUtils.isEmpty(loginedUserDefaultTeam)){
+			TeamModel defaultTeam = userManager.getTeamModel(loginedUserDefaultTeam);
+			if( defaultTeam != null ) {
+				userModel.teams.add(defaultTeam);
+			}
+		}
 		// Establish the checksum of the current version of the user
 		final BigInteger userCurrentCheck = DeepCopier.checksum(userModel);
 
 		// Establish the checksum of the stored version of the user
 		final BigInteger userLocalDBcheck = DeepCopier.checksum(userLocalDB);
 
+		
 		// Compare the checksums
 		if (!userCurrentCheck.equals(userLocalDBcheck)) {
 			// If mismatch, save the new instance.
 			userManager.updateUserModel(userModel);
 		}
+		
+	
 	}
 
 	protected void updateTeam(TeamModel teamModel) {
