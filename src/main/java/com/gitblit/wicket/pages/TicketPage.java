@@ -1407,6 +1407,9 @@ public class TicketPage extends RepositoryPage {
 		if (repository.requireApproval) {
 			// repository requires approval
 			allowMerge = ticket.isOpen() && ticket.isApproved(patchset);
+			if (repository.requireScore > -1) {
+				allowMerge &= ticket.getScore(patchset) >= repository.requireScore; 
+			}
 		} else {
 			// vetoes are binding
 			allowMerge = ticket.isOpen() && !ticket.isVetoed(patchset);

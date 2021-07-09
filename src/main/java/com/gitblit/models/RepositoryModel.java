@@ -89,6 +89,8 @@ public class RepositoryModel implements Serializable, Comparable<RepositoryModel
 	public boolean acceptNewPatchsets;
 	public boolean acceptNewTickets;
 	public boolean requireApproval;
+	public int requireScore;
+	public String writeSignoffCommit;
 	public String mergeTo;
 	public MergeType mergeType;
 

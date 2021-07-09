@@ -491,7 +491,6 @@ public class TicketModel implements Serializable, Comparable<TicketModel> {
 		return new ArrayList<Change>(reviews.values());
 	}
 
-
 	public boolean isApproved(Patchset patchset) {
 		if (patchset == null) {
 			return false;
@@ -510,6 +509,15 @@ public class TicketModel implements Serializable, Comparable<TicketModel> {
 			}
 		}
 		return approved && !vetoed;
+	}
+
+	public int getScore(Patchset patchset) {
+		int score = 0;
+		
+		for (Change change : getReviews(patchset)) {
+			score += change.review.score.getValue();
+		}
+		return score;
 	}
 
 	public boolean isVetoed(Patchset patchset) {
